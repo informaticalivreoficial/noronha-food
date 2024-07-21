@@ -18,9 +18,25 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'password', 'remember_token', 'code',
+        'gender',
+        'cpf',
+        'rg',
+        'rg_expedition',
+        'birthday',
+        'naturalness',
+        'civil_status',
+        'avatar',  
+        //Address      
+        'zipcode', 'street', 'number', 'complement', 'neighborhood', 'state', 'city',
+        //Contact
+        'phone', 'cell_phone', 'whatsapp', 'skype', 'telegram', 'email', 'additional_email',
+        //Social
+        'facebook', 'twitter', 'instagram', 'youtube', 'fliccr', 'linkedin',
+        //Function
+        'admin', 'client', 'editor', 'superadmin',
+        'status',
+        'information'
     ];
 
     /**
