@@ -40,9 +40,9 @@ class UserResource extends Resource
             Section::make()
                 ->schema([
                     FileUpload::make('avatar')
-                        ->disk('s3')
-                        ->visibility('private')
-                        ->directory(env('AWS_PASTA') . 'usuarios')
+                        ->disk('public')
+                        //->visibility('private')
+                        ->directory(env('AWS_PASTA') . 'users')
                         ->image()->imageEditor(), 
                 ])->columnSpan(1),
 
@@ -72,7 +72,7 @@ class UserResource extends Resource
                     TextInput::make('rg')->mask('99.999.999-9')->label('RG')->maxLength(255),
                     TextInput::make('rg_expedition')->label('Órgão Expedidor')->maxLength(255),
                     TextInput::make('naturalness')->label('Naturalidade')->maxLength(255),
-                ])->columnSpan(2)->columns(2),
+            ])->columnSpan(2)->columns(2),
 
             Section::make('Redes Sociais')
                 ->schema([
@@ -127,7 +127,7 @@ class UserResource extends Resource
                 ])->collapsible()->columnSpan(1),
 
             
-            Forms\Components\Select::make('role')
+            Select::make('role')
                 ->options(User::ROLES)
                 ->required(),
         ]);
