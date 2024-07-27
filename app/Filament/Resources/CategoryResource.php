@@ -49,6 +49,7 @@ class CategoryResource extends Resource
                     ->schema([
                         TextInput::make('name')
                                 ->label('Nome da Categoria')
+                                ->maxLength(255)
                                 ->live()
                                 ->required()->minLength(1)->maxLength(150)
                                 ->afterStateUpdated(function (string $operation, $state, Forms\Set $set) {
@@ -58,7 +59,12 @@ class CategoryResource extends Resource
 
                         $set('slug', Str::slug($state));
                     }),
-                TextInput::make('slug')->required()->minLength(1)->unique(ignoreRecord: true)->maxLength(150),
+                TextInput::make('slug')
+                    ->required()
+                    ->maxLength(255)
+                    ->disabled()
+                    ->dehydrated()
+                    ->unique(Category::class, 'slug', ignoreRecord: true),
                 Toggle::make('is_active')
                     ->label('Status')
                     ->required()
@@ -73,7 +79,7 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('image')->label('Capa'),
-                TextColumn::make('name')->label('Nome')->searchable(),  
+                TextColumn::make('name')->label('Categoria')->searchable(),  
                 TextColumn::make('created_at')->label('Data')->dateTime('d/m/Y')->sortable(),
                 ToggleColumn::make('is_active')->searchable()->label('Status'),
             ])

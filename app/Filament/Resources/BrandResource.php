@@ -7,62 +7,89 @@ use App\Filament\Resources\BrandResource\RelationManagers;
 use App\Models\Brand;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class BrandResource extends Resource
 {
     protected static ?string $model = Brand::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Marcas';
+
+    protected static ?string $slug = 'marcas';
+
+    protected static ?string $navigationIcon = 'heroicon-o-computer-desktop';
 
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('image')
-                    ->image(),
-                Forms\Components\TextInput::make('is_active')
-                    ->required()
-                    ->maxLength(255)
-                    ->default(1),
-            ]);
+        ->schema([
+            Section::make()
+                ->schema([
+                    FileUpload::make('image')
+                        ->label('Capa')
+                        ->disk('public')
+                        ->visibility('private')
+                        ->directory(env('AWS_PASTA') . 'brands')
+                        ->image()->imageEditor(), 
+                ])->columnSpan(1),
+
+            Section::make()
+                ->schema([
+                    TextInput::make('name')
+                            ->label('Nome da Marca')
+                            ->maxLength(255)
+                            ->live()
+                            ->required()->minLength(1)->maxLength(150)
+                            ->afterStateUpdated(function (string $operation, $state, Forms\Set $set) {
+                    if ($operation === 'edit') {
+                        return;
+                    }
+
+                    $set('slug', Str::slug($state));
+                }),
+            TextInput::make('slug')
+                ->required()
+                ->maxLength(255)
+                ->disabled()
+                ->dehydrated()
+                ->unique(Brand::class, 'slug', ignoreRecord: true),
+            Toggle::make('is_active')
+                ->label('Status')
+                ->required()
+                ->default(true),
+                ])->columnSpan(2)->columns(2),
+            
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('is_active')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                ImageColumn::make('image')->label('Capa'),
+                TextColumn::make('name')->label('Marca')->searchable(),  
+                TextColumn::make('created_at')->label('Data')->dateTime('d/m/Y')->sortable(),
+                ToggleColumn::make('is_active')->searchable()->label('Status'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->iconButton(),
+                Tables\Actions\EditAction::make()->iconButton(),
+                Tables\Actions\DeleteAction::make()->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -85,5 +112,15 @@ class BrandResource extends Resource
             'create' => Pages\CreateBrand::route('/create'),
             'edit' => Pages\EditBrand::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Marca');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Marcas');
     }
 }
