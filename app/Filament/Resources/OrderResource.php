@@ -8,6 +8,8 @@ use App\Models\Order;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -19,9 +21,12 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Number;
 
 class OrderResource extends Resource
 {
@@ -134,7 +139,26 @@ class OrderResource extends Resource
                                     ->required()
                                     ->dehydrated()
                                     ->columnSpan(3),
-                            ])->columns(12)
+                            ])->columns(12),
+
+                            Placeholder::make('grand_total_placeholder')
+                                ->label('Total Geral')
+                                ->content(function (Get $get, Set $set){
+                                    $total = 0;
+                                    if(!$repeaters = $get('items')){
+                                        return $total;
+                                    }
+
+                                    $set('grand_total', $total);
+                                    foreach($repeaters as $key => $repeater){
+                                        $total += $get("items.{$key}.total_amount");
+                                    }
+
+                                    return Number::currency($total, 'BRL');
+                                }),
+
+                                Hidden::make('grand_total')
+                                    ->default(0)
                     ]),
                 ])->columnSpanFull()
             ]);
@@ -144,7 +168,34 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('user.name')
+                    ->label('Cliente')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('grand_total')
+                    ->label('Valor Total')
+                    ->numeric()
+                    ->sortable()
+                    ->money('BRL'),
+                TextColumn::make('payment_method')
+                    ->label('Gateway')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('payment_status')
+                    ->label('Pagamento')
+                    ->searchable()
+                    ->sortable(),
+                SelectColumn::make('status')
+                    ->label('Pedido')
+                    ->searchable()
+                    ->sortable()
+                    ->options([
+                        'new' => 'Novo',
+                        'processing' => 'Processando',
+                        'shipped' => 'Enviado',
+                        'delivered' => 'Entregue',
+                        'canceled' => 'Cancelado',
+                    ])
             ])
             ->filters([
                 //
