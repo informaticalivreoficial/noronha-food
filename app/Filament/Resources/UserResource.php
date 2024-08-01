@@ -34,6 +34,10 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -185,4 +189,10 @@ class UserResource extends Resource
     {
         return __('Usuários');
     }
+
+    //busca global por nome e email
+    // public static function getGloballySearchableAttributes(): array
+    // {
+    //     return ['name', 'email'];
+    // }
 }
