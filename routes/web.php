@@ -22,7 +22,7 @@ Route::get('/', Home::class);
 Route::get('/categorias', CategoriesPage::class);
 Route::get('/produtos', ProductsPage::class);
 Route::get('/meu-carrinho-de-compras', CartPage::class);
-Route::get('/produtos/{slug}', ProductDetailPage::class);
+Route::get('/produto/{slug}', ProductDetailPage::class);
 
 Route::get('/checkout', CheckoutPage::class);
 Route::get('/meus-pedidos', MyOrdersPage::class);
